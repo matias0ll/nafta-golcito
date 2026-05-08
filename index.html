@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f1923">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nafta Golcito">
+  <title>Nafta Golcito</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1923;
+      --bg2: #162030;
+      --bg3: #1e2d3d;
+      --card: #1a2940;
+      --border: #2a3f55;
+      --accent: #f0a500;
+      --accent2: #e05c2a;
+      --green: #2ecc71;
+      --red: #e74c3c;
+      --text: #eaf0f7;
+      --text2: #7a98b8;
+      --text3: #4a6a8a;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); overflow: hidden; }
+
+    /* ── APP SHELL ── */
+    #app { height: 100vh; display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; position: relative; }
+
+    /* ── SCREENS ── */
+    .screen { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; transform: translateY(12px); }
+    .screen.active { opacity: 1; pointer-events: all; transform: translateY(0); }
+
+    /* ── HEADER ── */
+    .header { padding: 52px 20px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .header-back { width: 36px; height: 36px; border-radius: 50%; background: var(--bg3); border: none; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .header h1 { font-family: var(--font-head); font-size: 22px; font-weight: 700; }
+    .header-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+    .header-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 800; font-size: 14px; color: #000; margin-left: auto; cursor: pointer; flex-shrink: 0; }
+
+    /* ── SCROLL CONTENT ── */
+    .content { flex: 1; overflow-y: auto; padding: 0 16px 100px; scrollbar-width: none; }
+    .content::-webkit-scrollbar { display: none; }
+
+    /* ── BOTTOM NAV ── */
+    .nav { height: 68px; background: var(--bg2); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); }
+    .nav-btn { flex: 1; height: 100%; border: none; background: none; color: var(--text3); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-family: var(--font-body); font-size: 10px; transition: color 0.2s; }
+    .nav-btn.active { color: var(--accent); }
+    .nav-btn svg { width: 22px; height: 22px; }
+    .nav-icon { font-size: 22px; line-height: 1; }
+
+    /* ── CARDS ── */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; }
+    .card-title { font-family: var(--font-head); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
+
+    /* ── BUTTONS ── */
+    .btn { width: 100%; padding: 16px; border-radius: var(--radius-sm); border: none; font-family: var(--font-head); font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.03em; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:active { transform: scale(0.97); background: #d49400; }
+    .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:active { transform: scale(0.97); }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-sm { padding: 10px 16px; font-size: 13px; width: auto; }
+
+    /* ── INPUTS ── */
+    .input-group { margin-bottom: 14px; }
+    .input-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; font-weight: 500; }
+    .input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 13px 14px; color: var(--text); font-family: var(--font-body); font-size: 15px; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
+    .input:focus { border-color: var(--accent); }
+    .input::placeholder { color: var(--text3); }
+    select.input { cursor: pointer; }
+
+    /* ── PILLS ── */
+    .pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s; font-family: var(--font-body); }
+    .pill.selected { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+    .pill.selected-multi { background: var(--bg3); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+    /* ── BADGES ── */
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: rgba(46,204,113,0.15); color: var(--green); }
+    .badge-red { background: rgba(231,76,60,0.15); color: var(--red); }
+    .badge-yellow { background: rgba(240,165,0,0.15); color: var(--accent); }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ── AMOUNT BIG ── */
+    .amount-big { font-family: var(--font-head); font-size: 42px; font-weight: 800; letter-spacing: -0.02em; }
+    .amount-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+    /* ── LIST ITEMS ── */
+    .list-item { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .list-item:last-child { border-bottom: none; }
+    .list-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .list-body { flex: 1; min-width: 0; }
+    .list-title { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .list-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .list-right { text-align: right; flex-shrink: 0; }
+    .list-amount { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
+
+    /* ── TOAST ── */
+    #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg3); border: 1px solid var(--border); border-radius: 999px; padding: 10px 20px; font-size: 13px; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 999; max-width: calc(100% - 32px); }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { border-color: var(--green); color: var(--green); }
+    #toast.error { border-color: var(--red); color: var(--red); }
+
+    /* ── LOGIN SCREEN ── */
+    #screen-login { background: var(--bg); justify-content: center; align-items: center; padding: 32px; }
+    .login-logo { font-family: var(--font-head); font-size: 48px; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+    .login-sub { font-size: 14px; color: var(--text2); margin-bottom: 48px; }
+    .login-form { width: 100%; }
+
+    /* ── PIN DOTS ── */
+    .pin-dots { display: flex; justify-content: center; gap: 14px; margin: 20px 0; }
+    .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--border); transition: background 0.15s; }
+    .pin-dot.filled { background: var(--accent); }
+    .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+    .pin-key { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 18px; font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--text); cursor: pointer; transition: all 0.1s; text-align: center; }
+    .pin-key:active { background: var(--border); transform: scale(0.94); }
+    .pin-key.del { font-size: 16px; color: var(--text2); }
+
+    /* ── HOME SCREEN ── */
+    .home-greeting { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+    .home-name { font-family: var(--font-head); font-size: 28px; font-weight: 800; margin-bottom: 24px; }
+    .deuda-card { background: linear-gradient(135deg, #1e3a5a, #162030); border: 1px solid #2a4a6a; border-radius: var(--radius); padding: 24px; margin-bottom: 12px; position: relative; overflow: hidden; }
+    .deuda-card::before { content: '⛽'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 64px; opacity: 0.08; }
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .quick-btn { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 14px; cursor: pointer; transition: all 0.15s; }
+    .quick-btn:active { transform: scale(0.96); background: var(--bg3); }
+    .quick-btn-icon { font-size: 24px; margin-bottom: 8px; }
+    .quick-btn-label { font-family: var(--font-head); font-size: 13px; font-weight: 700; }
+
+    /* ── SECTION LABEL ── */
+    .section-label { font-family: var(--font-head); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text2); margin: 20px 0 10px; }
+
+    /* ── LOADING ── */
+    .loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--text2); font-size: 13px; gap: 10px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── EMPTY STATE ── */
+    .empty { text-align: center; padding: 48px 20px; color: var(--text2); }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-text { font-size: 14px; }
+
+    /* ── MODAL ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--bg2); border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-height: 80vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 999px; margin: 0 auto 20px; }
+    .modal-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+
+    /* ── HISTORICO ── */
+    .semana-header { background: var(--bg3); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .semana-title { font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; }
+
+    /* ── ADMIN INDICATOR ── */
+    .admin-badge { background: rgba(240,165,0,0.15); border: 1px solid rgba(240,165,0,0.3); border-radius: 999px; padding: 3px 10px; font-size: 11px; color: var(--accent); font-weight: 600; }
+
+    /* ── TOGGLE ── */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+    .toggle { width: 44px; height: 26px; background: var(--border); border-radius: 999px; cursor: pointer; transition: background 0.2s; position: relative; flex-shrink: 0; }
+    .toggle.on { background: var(--accent); }
+    .toggle::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; }
+    .toggle.on::after { left: 21px; }
+
+    /* ── RESPONSIVE SAFE AREA ── */
+    .safe-top { height: env(safe-area-inset-top, 0px); }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ LOGIN ══ -->
+  <div class="screen active" id="screen-login">
+    <div class="login-logo">⛽</div>
+    <div style="font-family: var(--font-head); font-size: 28px; font-weight: 800; margin-bottom: 6px;">Nafta Golcito</div>
+    <div class="login-sub">¿Quién sos?</div>
+    <div class="login-form" id="login-step-user">
+      <div class="pill-group" id="user-pills" style="justify-content: center; margin-bottom: 24px;"></div>
+    </div>
+    <div class="login-form" id="login-step-pin" style="display:none;">
+      <div style="text-align:center; font-size:14px; color:var(--text2); margin-bottom:4px;">PIN de</div>
+      <div style="text-align:center; font-family:var(--font-head); font-size:20px; font-weight:700;" id="pin-name-label"></div>
+      <div class="pin-dots">
+        <div class="pin-dot" id="d0"></div>
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
+      </div>
+      <div class="pin-keypad" id="pin-keypad"></div>
+      <button class="btn btn-secondary" style="margin-top:16px; font-size:13px;" onclick="backToUserSelect()">← Cambiar usuario</button>
+    </div>
+  </div>
+
+  <!-- ══ HOME ══ -->
+  <div class="screen" id="screen-home">
+    <div class="header">
+      <div>
+        <div class="home-greeting">Hola,</div>
+        <div class="home-name" id="home-username">—</div>
+      </div>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+        <div class="admin-badge" id="admin-badge" style="display:none;">Admin</div>
+        <div class="header-avatar" id="home-avatar" onclick="logout()">?</div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="deuda-card" id="home-deuda-card">
+        <div class="amount-label">Tu deuda esta semana</div>
+        <div class="amount-big" id="home-deuda">$0</div>
+        <div style="margin-top:8px;" id="home-deuda-status"></div>
+      </div>
+      <div class="quick-actions">
+        <div class="quick-btn" onclick="showScreen('screen-viaje')">
+          <div class="quick-btn-icon">🚗</div>
+          <div class="quick-btn-label">Cargar viaje</div>
+        </div>
+        <div class="quick-btn" onclick="showScreen('screen-historico')">
+          <div class="quick-btn-icon">📋</div>
+          <div class="quick-btn-label">Histórico</div>
+        </div>
+        <div class="quick-btn" id="btn-liquidacion" onclick="showScreen('screen-liquidacion')" style="display:none;">
+          <div class="quick-btn-icon">💰</div>
+          <div class="quick-btn-label">Liquidación</div>
+        </div>
+        <div class="quick-btn" onclick="showScreen('screen-config')">
+          <div class="quick-btn-icon">⚙️</div>
+          <div class="quick-btn-label">Configuración</div>
+        </div>
+      </div>
+      <div class="section-label">Viajes recientes</div>
+      <div class="card" id="home-recent">
+        <div class="loading"><div class="spinner"></div> Cargando...</div>
+      </div>
+    </div>
+    <nav class="nav" id="main-nav">
+      <button class="nav-btn active" onclick="showScreen('screen-home'); setNav(this)">
+        <span class="nav-icon">🏠</span><span>Inicio</span>
+      </button>
+      <button class="nav-btn" onclick="showScreen('screen-viaje'); setNav(this)">
+        <span class="nav-icon">🚗</span><span>Viaje</span>
+      </button>
+      <button class="nav-btn" onclick="showScreen('screen-historico'); setNav(this)">
+        <span class="nav-icon">📋</span><span>Historial</span>
+      </button>
+      <button class="nav-btn" onclick="showScreen('screen-config'); setNav(this)">
+        <span class="nav-icon">⚙️</span><span>Config</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ══ CARGAR VIAJE ══ -->
+  <div class="screen" id="screen-viaje">
+    <div class="header">
+      <button class="header-back" onclick="showScreen('screen-home')">←</button>
+      <div><div class="header h1" style="font-family:var(--font-head);font-size:20px;font-weight:700;">Nuevo viaje</div></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">¿Quiénes viajaron?</div>
+        <div class="pill-group" id="viaje-personas"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Destino</div>
+        <div class="pill-group" id="viaje-destinos" style="margin-bottom:12px;"></div>
+        <div id="viaje-otro-fields" style="display:none;">
+          <div class="input-group">
+            <label class="input-label">Descripción del viaje</label>
+            <input class="input" id="viaje-desc" placeholder="Ej: Amistoso San Patricio" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Distancia (km)</label>
+            <input class="input" type="number" id="viaje-km" placeholder="0" />
+          </div>
+          <div class="card-title" style="margin-top:4px;">Tipo de ruta</div>
+          <div class="pill-group" id="viaje-tipo"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Fecha</div>
+        <input class="input" type="date" id="viaje-fecha" />
+      </div>
+      <button class="btn btn-primary" onclick="submitViaje()">Registrar viaje</button>
+    </div>
+  </div>
+
+  <!-- ══ HISTÓRICO ══ -->
+  <div class="screen" id="screen-historico">
+    <div class="header">
+      <button class="header-back" onclick="showScreen('screen-home')">←</button>
+      <div><div style="font-family:var(--font-head);font-size:20px;font-weight:700;">Histórico</div></div>
+    </div>
+    <div class="content" id="historico-content">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    </div>
+  </div>
+
+  <!-- ══ LIQUIDACIÓN (admin) ══ -->
+  <div class="screen" id="screen-liquidacion">
+    <div class="header">
+      <button class="header-back" onclick="showScreen('screen-home')">←</button>
+      <div><div style="font-family:var(--font-head);font-size:20px;font-weight:700;">Liquidación</div></div>
+    </div>
+    <div class="content">
+      <div class="card" id="liq-viajes-semana">
+        <div class="card-title">Viajes esta semana</div>
+        <div id="liq-viajes-list"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Carga de nafta</div>
+        <div class="input-group">
+          <label class="input-label">Fecha de carga</label>
+          <input class="input" type="date" id="liq-fecha" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Precio por litro ($)</label>
+          <input class="input" type="number" id="liq-precio" placeholder="0" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Total pagado ($)</label>
+          <input class="input" type="number" id="liq-total" placeholder="0" />
+        </div>
+      </div>
+      <div class="card" id="liq-deuda-preview">
+        <div class="card-title">Deuda por persona</div>
+        <div id="liq-deuda-list"><div class="empty"><div class="empty-text">Completá los datos de carga</div></div></div>
+      </div>
+      <button class="btn btn-primary" onclick="cerrarSemana()" style="margin-bottom:10px;">⚡ Cerrar semana</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-home')">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- ══ CONFIG ══ -->
+  <div class="screen" id="screen-config">
+    <div class="header">
+      <button class="header-back" onclick="showScreen('screen-home')">←</button>
+      <div><div style="font-family:var(--font-head);font-size:20px;font-weight:700;">Configuración</div></div>
+    </div>
+    <div class="content">
+      <div class="section-label">Viajes recurrentes</div>
+      <div class="card" id="config-recurrentes-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <button class="btn btn-secondary" onclick="openModal('modal-add-recurrente')" style="margin-bottom:24px;">+ Agregar viaje recurrente</button>
+
+      <div class="section-label" id="config-usuarios-section">Usuarios</div>
+      <div class="card" id="config-usuarios-list" style="display:none;">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <button class="btn btn-secondary" id="btn-add-usuario" onclick="openModal('modal-add-usuario')" style="margin-bottom:24px; display:none;">+ Agregar usuario</button>
+
+      <div class="section-label">Consumo del auto</div>
+      <div class="card">
+        <div class="input-group">
+          <label class="input-label">Ciudad (L/100km)</label>
+          <input class="input" type="number" id="config-ciudad" placeholder="9" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Ruta (L/100km)</label>
+          <input class="input" type="number" id="config-ruta" placeholder="7.5" />
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="saveConsumo()">Guardar</button>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn btn-secondary" onclick="logout()" style="color:var(--red); border-color:var(--red);">Cerrar sesión</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ MODALES ══ -->
+<div class="modal-overlay" id="modal-add-recurrente" onclick="closeModalOutside(event, 'modal-add-recurrente')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nuevo viaje recurrente</div>
+    <div class="input-group">
+      <label class="input-label">Nombre del destino</label>
+      <input class="input" id="rec-nombre" placeholder="Ej: Pilar" />
+    </div>
+    <div class="input-group">
+      <label class="input-label">Distancia (km)</label>
+      <input class="input" type="number" id="rec-km" placeholder="0" />
+    </div>
+    <div class="card-title" style="margin-bottom:8px;">Tipo</div>
+    <div class="pill-group" id="rec-tipo" style="margin-bottom:16px;">
+      <div class="pill selected" data-val="ruta" onclick="selectPill(this, 'rec-tipo')">Ruta</div>
+      <div class="pill" data-val="ciudad" onclick="selectPill(this, 'rec-tipo')">Ciudad</div>
+    </div>
+    <button class="btn btn-primary" onclick="addRecurrente()">Guardar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-usuario" onclick="closeModalOutside(event, 'modal-add-usuario')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nuevo usuario</div>
+    <div class="input-group">
+      <label class="input-label">Nombre</label>
+      <input class="input" id="new-user-nombre" placeholder="Ej: Guada" />
+    </div>
+    <div class="input-group">
+      <label class="input-label">PIN (4 dígitos)</label>
+      <input class="input" type="number" id="new-user-pin" placeholder="1234" maxlength="4" />
+    </div>
+    <div class="toggle-row" style="margin-bottom:16px;">
+      <span style="font-size:14px;">Es administrador</span>
+      <div class="toggle" id="new-user-admin" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <button class="btn btn-primary" onclick="addUsuario()">Crear usuario</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDOGa425gmoOr0eyYR02h81c3lklYCG_sY",
+    authDomain: "nafta-golcito.firebaseapp.com",
+    projectId: "nafta-golcito",
+    storageBucket: "nafta-golcito.firebasestorage.app",
+    messagingSenderId: "1061914995786",
+    appId: "1:1061914995786:web:7fd8eaac4cc7fcc2288ab3"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const auth = getAuth(fbApp);
+
+  // ── STATE ──
+  let currentUser = null;
+  let appConfig = { consumoCiudad: 9, consumoRuta: 7.5 };
+  let allUsers = [];
+  let recurrentes = [];
+  let pinBuffer = '';
+  let selectedUserForLogin = null;
+
+  // ── EXPOSE GLOBALS ──
+  window.db = db;
+  window.auth = auth;
+  window.getCurrentUser = () => currentUser;
+  window.getAppConfig = () => appConfig;
+  window.getRecurrentes = () => recurrentes;
+  window.getAllUsers = () => allUsers;
+
+  // ── INIT ──
+  async function init() {
+    await loadConfig();
+    await loadUsers();
+    renderUserPills();
+    setTodayDate();
+  }
+
+  async function loadConfig() {
+    const d = await getDoc(doc(db, 'config', 'app'));
+    if (d.exists()) appConfig = { ...appConfig, ...d.data() };
+    const ci = document.getElementById('config-ciudad');
+    const ru = document.getElementById('config-ruta');
+    if (ci) ci.value = appConfig.consumoCiudad;
+    if (ru) ru.value = appConfig.consumoRuta;
+  }
+
+  async function loadUsers() {
+    const snap = await getDocs(collection(db, 'usuarios'));
+    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  async function loadRecurrentes() {
+    const snap = await getDocs(query(collection(db, 'recurrentes'), orderBy('nombre')));
+    recurrentes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  function setTodayDate() {
+    const today = new Date().toISOString().split('T')[0];
+    ['viaje-fecha', 'liq-fecha'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = today;
+    });
+  }
+
+  // ── USER PILLS ──
+  function renderUserPills() {
+    const container = document.getElementById('user-pills');
+    container.innerHTML = allUsers.length ? '' : '<div style="color:var(--text2);font-size:14px;">No hay usuarios. Contactá al admin.</div>';
+    allUsers.forEach(u => {
+      const pill = document.createElement('div');
+      pill.className = 'pill';
+      pill.textContent = u.nombre;
+      pill.onclick = () => startPinEntry(u);
+      container.appendChild(pill);
+    });
+  }
+
+  // ── PIN ENTRY ──
+  window.startPinEntry = function(user) {
+    selectedUserForLogin = user;
+    pinBuffer = '';
+    document.getElementById('login-step-user').style.display = 'none';
+    document.getElementById('login-step-pin').style.display = 'block';
+    document.getElementById('pin-name-label').textContent = user.nombre;
+    updatePinDots();
+    renderKeypad();
+  };
+
+  window.backToUserSelect = function() {
+    document.getElementById('login-step-user').style.display = 'block';
+    document.getElementById('login-step-pin').style.display = 'none';
+    pinBuffer = '';
+  };
+
+  function renderKeypad() {
+    const kp = document.getElementById('pin-keypad');
+    kp.innerHTML = '';
+    [1,2,3,4,5,6,7,8,9,'',0,'⌫'].forEach(k => {
+      const btn = document.createElement('div');
+      btn.className = 'pin-key' + (k === '⌫' ? ' del' : '');
+      btn.textContent = k;
+      if (k !== '') btn.onclick = () => handlePinKey(k);
+      kp.appendChild(btn);
+    });
+  }
+
+  function handlePinKey(k) {
+    if (k === '⌫') {
+      pinBuffer = pinBuffer.slice(0, -1);
+    } else if (pinBuffer.length < 4) {
+      pinBuffer += k;
+    }
+    updatePinDots();
+    if (pinBuffer.length === 4) setTimeout(validatePin, 150);
+  }
+
+  function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('d' + i).classList.toggle('filled', i < pinBuffer.length);
+    }
+  }
+
+  async function validatePin() {
+    if (pinBuffer === String(selectedUserForLogin.pin)) {
+      currentUser = selectedUserForLogin;
+      await loginSuccess();
+    } else {
+      showToast('PIN incorrecto', 'error');
+      pinBuffer = '';
+      updatePinDots();
+    }
+  }
+
+  async function loginSuccess() {
+    document.getElementById('home-username').textContent = currentUser.nombre;
+    document.getElementById('home-avatar').textContent = currentUser.nombre[0].toUpperCase();
+    if (currentUser.admin) {
+      document.getElementById('admin-badge').style.display = 'inline-block';
+      document.getElementById('btn-liquidacion').style.display = 'block';
+      document.getElementById('config-usuarios-list').style.display = 'block';
+      document.getElementById('btn-add-usuario').style.display = 'block';
+    }
+    showScreen('screen-home');
+    await Promise.all([loadHomeData(), loadRecurrentes()]);
+    renderViajeForm();
+    loadConfigUsuarios();
+    renderConfigRecurrentes();
+  }
+
+  window.logout = function() {
+    currentUser = null;
+    pinBuffer = '';
+    document.getElementById('login-step-user').style.display = 'block';
+    document.getElementById('login-step-pin').style.display = 'none';
+    document.getElementById('admin-badge').style.display = 'none';
+    document.getElementById('btn-liquidacion').style.display = 'none';
+    showScreen('screen-login');
+    renderUserPills();
+  };
+
+  // ── HOME DATA ──
+  async function loadHomeData() {
+    await loadSemanaActual();
+    loadRecentViajes();
+  }
+
+  async function loadSemanaActual() {
+    const snap = await getDocs(query(collection(db, 'viajes'), orderBy('timestamp', 'desc')));
+    const semanaSnap = await getDoc(doc(db, 'config', 'semana'));
+    const semanaId = semanaSnap.exists() ? semanaSnap.data().id : null;
+
+    let totalLitros = 0;
+    let miLitros = 0;
+    let liquidacionSnap = null;
+
+    if (semanaId) {
+      liquidacionSnap = await getDoc(doc(db, 'liquidaciones', semanaId));
+    }
+
+    snap.docs.forEach(d => {
+      const v = d.data();
+      if (v.semanaId === semanaId) {
+        totalLitros += v.litros || 0;
+        if (v.personas && v.personas.includes(currentUser.nombre)) {
+          miLitros += (v.litros || 0) / v.personas.length;
+        }
+      }
+    });
+
+    let miDeuda = 0;
+    if (liquidacionSnap && liquidacionSnap.exists()) {
+      const liq = liquidacionSnap.data();
+      const pct = totalLitros > 0 ? miLitros / totalLitros : 0;
+      miDeuda = pct * (liq.totalPago || 0);
+    }
+
+    const deudaEl = document.getElementById('home-deuda');
+    const statusEl = document.getElementById('home-deuda-status');
+    if (miDeuda > 0) {
+      deudaEl.textContent = '$' + Math.round(miDeuda).toLocaleString('es-AR');
+      statusEl.innerHTML = '<span class="badge badge-red">Pendiente de pago</span>';
+    } else {
+      deudaEl.textContent = '$0';
+      statusEl.innerHTML = '<span class="badge badge-green">Al día ✓</span>';
+    }
+  }
+
+  async function loadRecentViajes() {
+    const container = document.getElementById('home-recent');
+    const snap = await getDocs(query(collection(db, 'viajes'), orderBy('timestamp', 'desc')));
+    const recent = snap.docs.slice(0, 5).map(d => ({ id: d.id, ...d.data() }));
+    if (!recent.length) {
+      container.innerHTML = '<div class="empty"><div class="empty-icon">🚗</div><div class="empty-text">No hay viajes aún</div></div>';
+      return;
+    }
+    container.innerHTML = recent.map(v => `
+      <div class="list-item">
+        <div class="list-icon">🚗</div>
+        <div class="list-body">
+          <div class="list-title">${v.descripcion}</div>
+          <div class="list-sub">${v.personas ? v.personas.join(', ') : '—'} · ${formatDate(v.fecha)}</div>
+        </div>
+        <div class="list-right">
+          <div class="list-amount">${v.litros ? v.litros.toFixed(2) + ' L' : '—'}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── VIAJE FORM ──
+  function renderViajeForm() {
+    // Personas
+    const personasEl = document.getElementById('viaje-personas');
+    personasEl.innerHTML = '';
+    allUsers.forEach(u => {
+      const pill = document.createElement('div');
+      pill.className = 'pill' + (u.nombre === currentUser.nombre ? ' selected-multi' : '');
+      pill.dataset.nombre = u.nombre;
+      pill.textContent = u.nombre;
+      pill.onclick = () => {
+        pill.classList.toggle('selected-multi');
+      };
+      personasEl.appendChild(pill);
+    });
+
+    // Destinos
+    const destinosEl = document.getElementById('viaje-destinos');
+    destinosEl.innerHTML = '';
+    recurrentes.forEach(r => {
+      const pill = document.createElement('div');
+      pill.className = 'pill';
+      pill.dataset.id = r.id;
+      pill.textContent = r.nombre;
+      pill.onclick = () => {
+        document.querySelectorAll('#viaje-destinos .pill').forEach(p => p.classList.remove('selected'));
+        pill.classList.add('selected');
+        document.getElementById('viaje-otro-fields').style.display = 'none';
+      };
+      destinosEl.appendChild(pill);
+    });
+
+    const otroBtn = document.createElement('div');
+    otroBtn.className = 'pill';
+    otroBtn.textContent = 'Otro';
+    otroBtn.onclick = () => {
+      document.querySelectorAll('#viaje-destinos .pill').forEach(p => p.classList.remove('selected'));
+      otroBtn.classList.add('selected');
+      document.getElementById('viaje-otro-fields').style.display = 'block';
+    };
+    destinosEl.appendChild(otroBtn);
+
+    // Tipo
+    const tipoEl = document.getElementById('viaje-tipo');
+    tipoEl.innerHTML = `
+      <div class="pill selected" data-val="ruta" onclick="selectPill(this, 'viaje-tipo')">Ruta</div>
+      <div class="pill" data-val="ciudad" onclick="selectPill(this, 'viaje-tipo')">Ciudad</div>
+    `;
+  }
+
+  window.submitViaje = async function() {
+    const personas = [...document.querySelectorAll('#viaje-personas .pill.selected-multi')].map(p => p.dataset.nombre);
+    if (!personas.length) { showToast('Seleccioná al menos una persona', 'error'); return; }
+
+    const destinoSelected = document.querySelector('#viaje-destinos .pill.selected');
+    if (!destinoSelected) { showToast('Seleccioná un destino', 'error'); return; }
+
+    const fecha = document.getElementById('viaje-fecha').value;
+    if (!fecha) { showToast('Ingresá la fecha', 'error'); return; }
+
+    let descripcion, distancia, consumo, litros;
+
+    if (destinoSelected.textContent === 'Otro') {
+      descripcion = document.getElementById('viaje-desc').value.trim();
+      distancia = parseFloat(document.getElementById('viaje-km').value);
+      const tipo = document.querySelector('#viaje-tipo .pill.selected')?.dataset.val || 'ruta';
+      consumo = tipo === 'ciudad' ? appConfig.consumoCiudad : appConfig.consumoRuta;
+      if (!descripcion) { showToast('Ingresá la descripción', 'error'); return; }
+      if (!distancia || isNaN(distancia)) { showToast('Ingresá la distancia', 'error'); return; }
+    } else {
+      const rec = recurrentes.find(r => r.id === destinoSelected.dataset.id);
+      descripcion = rec.nombre;
+      distancia = rec.distancia;
+      consumo = rec.tipo === 'ciudad' ? appConfig.consumoCiudad : appConfig.consumoRuta;
+    }
+
+    litros = (distancia * consumo) / 100;
+
+    const semanaSnap = await getDoc(doc(db, 'config', 'semana'));
+    const semanaId = semanaSnap.exists() ? semanaSnap.data().id : 'semana_' + Date.now();
+    if (!semanaSnap.exists()) await setDoc(doc(db, 'config', 'semana'), { id: semanaId });
+
+    await addDoc(collection(db, 'viajes'), {
+      descripcion, distancia, consumo, litros, personas, fecha,
+      semanaId, timestamp: serverTimestamp(),
+      cargadoPor: currentUser.nombre
+    });
+
+    showToast('✓ Viaje registrado', 'success');
+    renderViajeForm();
+    document.getElementById('viaje-fecha').value = new Date().toISOString().split('T')[0];
+    document.getElementById('viaje-otro-fields').style.display = 'none';
+    setTimeout(() => { showScreen('screen-home'); loadHomeData(); }, 800);
+  };
+
+  // ── HISTORICO ──
+  window.loadHistorico = async function() {
+    const container = document.getElementById('historico-content');
+    container.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando...</div>';
+
+    const [viajesSnap, liqSnap] = await Promise.all([
+      getDocs(query(collection(db, 'viajes'), orderBy('timestamp', 'desc'))),
+      getDocs(query(collection(db, 'liquidaciones'), orderBy('timestamp', 'desc')))
+    ]);
+
+    const liquidaciones = {};
+    liqSnap.docs.forEach(d => liquidaciones[d.id] = d.data());
+
+    // Agrupar por semana
+    const semanas = {};
+    viajesSnap.docs.forEach(d => {
+      const v = { id: d.id, ...d.data() };
+      if (!semanas[v.semanaId]) semanas[v.semanaId] = { viajes: [], liq: liquidaciones[v.semanaId] };
+      semanas[v.semanaId].viajes.push(v);
+    });
+
+    if (!Object.keys(semanas).length) {
+      container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Sin historial aún</div></div>';
+      return;
+    }
+
+    let html = '';
+    Object.entries(semanas).reverse().forEach(([semId, data], idx) => {
+      const liq = data.liq;
+      const totalLitros = data.viajes.reduce((s, v) => s + (v.litros || 0), 0);
+      html += `<div class="semana-header"><span class="semana-title">📅 Semana ${Object.keys(semanas).length - idx}</span><span style="font-size:12px;color:var(--text2);">${totalLitros.toFixed(2)} L</span></div>`;
+      if (liq) {
+        html += `<div class="card" style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;"><span style="font-size:13px;color:var(--text2);">Nafta cargada por ${liq.quienCargo}</span><span style="font-family:var(--font-head);font-weight:700;">$${Math.round(liq.totalPago).toLocaleString('es-AR')}</span></div></div>`;
+      }
+      html += '<div class="card" style="margin-bottom:16px;">';
+      data.viajes.forEach(v => {
+        html += `<div class="list-item"><div class="list-icon">🚗</div><div class="list-body"><div class="list-title">${v.descripcion}</div><div class="list-sub">${v.personas ? v.personas.join(', ') : '—'} · ${formatDate(v.fecha)}</div></div><div class="list-right"><div class="list-amount">${(v.litros||0).toFixed(2)} L</div><div style="font-size:11px;color:var(--text2);">${v.distancia} km</div></div></div>`;
+      });
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  };
+
+  // ── LIQUIDACIÓN ──
+  window.loadLiquidacion = async function() {
+    const semanaSnap = await getDoc(doc(db, 'config', 'semana'));
+    const semanaId = semanaSnap.exists() ? semanaSnap.data().id : null;
+    if (!semanaId) { document.getElementById('liq-viajes-list').innerHTML = '<div class="empty"><div class="empty-text">No hay semana activa</div></div>'; return; }
+
+    const snap = await getDocs(query(collection(db, 'viajes'), orderBy('timestamp')));
+    const viajes = snap.docs.filter(d => d.data().semanaId === semanaId).map(d => ({ id: d.id, ...d.data() }));
+
+    const totalLitros = viajes.reduce((s, v) => s + (v.litros || 0), 0);
+
+    // Por persona
+    const porPersona = {};
+    allUsers.forEach(u => porPersona[u.nombre] = 0);
+    viajes.forEach(v => {
+      const litrosXpersona = (v.litros || 0) / (v.personas?.length || 1);
+      (v.personas || []).forEach(p => { if (porPersona[p] !== undefined) porPersona[p] += litrosXpersona; });
+    });
+
+    document.getElementById('liq-viajes-list').innerHTML = viajes.length
+      ? viajes.map(v => `<div class="list-item"><div class="list-icon">🚗</div><div class="list-body"><div class="list-title">${v.descripcion}</div><div class="list-sub">${v.personas?.join(', ')} · ${formatDate(v.fecha)}</div></div><div class="list-right"><div class="list-amount">${(v.litros||0).toFixed(2)} L</div></div></div>`).join('')
+      : '<div class="empty"><div class="empty-text">Sin viajes esta semana</div></div>';
+
+    // Preview deuda en tiempo real
+    ['liq-precio', 'liq-total'].forEach(id => {
+      document.getElementById(id).oninput = () => updateDeudaPreview(porPersona, totalLitros);
+    });
+    updateDeudaPreview(porPersona, totalLitros);
+    window._semanaId = semanaId;
+    window._porPersona = porPersona;
+    window._totalLitros = totalLitros;
+  };
+
+  function updateDeudaPreview(porPersona, totalLitros) {
+    const total = parseFloat(document.getElementById('liq-total').value) || 0;
+    const list = document.getElementById('liq-deuda-list');
+    if (!total) { list.innerHTML = '<div class="empty"><div class="empty-text">Ingresá el total pagado</div></div>'; return; }
+    list.innerHTML = Object.entries(porPersona)
+      .filter(([, l]) => l > 0)
+      .map(([nombre, litros]) => {
+        const pct = totalLitros > 0 ? litros / totalLitros : 0;
+        const deuda = pct * total;
+        return `<div class="list-item"><div class="list-body"><div class="list-title">${nombre}</div><div class="list-sub">${litros.toFixed(2)} L · ${(pct*100).toFixed(1)}%</div></div><div class="list-right"><div class="list-amount" style="color:var(--accent);">$${Math.round(deuda).toLocaleString('es-AR')}</div></div></div>`;
+      }).join('') || '<div class="empty"><div class="empty-text">Sin viajes registrados</div></div>';
+  }
+
+  window.cerrarSemana = async function() {
+    const fecha = document.getElementById('liq-fecha').value;
+    const precio = parseFloat(document.getElementById('liq-precio').value);
+    const total = parseFloat(document.getElementById('liq-total').value);
+    if (!fecha || !precio || !total) { showToast('Completá todos los campos', 'error'); return; }
+
+    const porPersona = window._porPersona || {};
+    const totalLitros = window._totalLitros || 0;
+    const deudas = {};
+    Object.entries(porPersona).forEach(([nombre, litros]) => {
+      const pct = totalLitros > 0 ? litros / totalLitros : 0;
+      deudas[nombre] = { litros, pct, monto: pct * total, pagado: false };
+    });
+
+    const semanaId = window._semanaId;
+    await setDoc(doc(db, 'liquidaciones', semanaId), {
+      fecha, precio, totalPago: total, quienCargo: currentUser.nombre,
+      deudas, totalLitros, timestamp: serverTimestamp()
+    });
+
+    // Nueva semana
+    const nuevaSemanaId = 'semana_' + Date.now();
+    await setDoc(doc(db, 'config', 'semana'), { id: nuevaSemanaId });
+
+    showToast('✓ Semana cerrada', 'success');
+    setTimeout(() => { showScreen('screen-home'); loadHomeData(); }, 900);
+  };
+
+  // ── CONFIG ──
+  window.loadConfigUsuarios = async function() {
+    if (!currentUser?.admin) return;
+    const container = document.getElementById('config-usuarios-list');
+    const snap = await getDocs(collection(db, 'usuarios'));
+    const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    container.innerHTML = users.map(u => `
+      <div class="list-item">
+        <div class="list-icon" style="background:var(--accent);color:#000;font-family:var(--font-head);font-weight:800;">${u.nombre[0]}</div>
+        <div class="list-body"><div class="list-title">${u.nombre}</div><div class="list-sub">${u.admin ? 'Administrador' : 'Usuario'}</div></div>
+      </div>
+    `).join('');
+  };
+
+  window.renderConfigRecurrentes = async function() {
+    await loadRecurrentes();
+    const container = document.getElementById('config-recurrentes-list');
+    if (!recurrentes.length) { container.innerHTML = '<div class="empty"><div class="empty-text">Sin viajes recurrentes</div></div>'; return; }
+    container.innerHTML = recurrentes.map(r => `
+      <div class="list-item">
+        <div class="list-icon">📍</div>
+        <div class="list-body"><div class="list-title">${r.nombre}</div><div class="list-sub">${r.distancia} km · ${r.tipo}</div></div>
+        ${currentUser?.admin ? `<button class="btn btn-sm" style="background:var(--red);color:#fff;padding:6px 12px;" onclick="deleteRecurrente('${r.id}')">✕</button>` : ''}
+      </div>
+    `).join('');
+  };
+
+  window.addRecurrente = async function() {
+    const nombre = document.getElementById('rec-nombre').value.trim();
+    const km = parseFloat(document.getElementById('rec-km').value);
+    const tipo = document.querySelector('#rec-tipo .pill.selected')?.dataset.val || 'ruta';
+    if (!nombre || !km) { showToast('Completá todos los campos', 'error'); return; }
+    await addDoc(collection(db, 'recurrentes'), { nombre, distancia: km, tipo });
+    showToast('✓ Guardado', 'success');
+    closeModal('modal-add-recurrente');
+    document.getElementById('rec-nombre').value = '';
+    document.getElementById('rec-km').value = '';
+    await renderConfigRecurrentes();
+    await loadRecurrentes();
+    renderViajeForm();
+  };
+
+  window.deleteRecurrente = async function(id) {
+    await deleteDoc(doc(db, 'recurrentes', id));
+    showToast('Eliminado', 'success');
+    await renderConfigRecurrentes();
+    await loadRecurrentes();
+    renderViajeForm();
+  };
+
+  window.addUsuario = async function() {
+    const nombre = document.getElementById('new-user-nombre').value.trim();
+    const pin = document.getElementById('new-user-pin').value.trim();
+    const admin = document.getElementById('new-user-admin').classList.contains('on');
+    if (!nombre || pin.length !== 4) { showToast('Nombre y PIN de 4 dígitos requeridos', 'error'); return; }
+    await addDoc(collection(db, 'usuarios'), { nombre, pin, admin });
+    showToast('✓ Usuario creado', 'success');
+    closeModal('modal-add-usuario');
+    document.getElementById('new-user-nombre').value = '';
+    document.getElementById('new-user-pin').value = '';
+    await loadUsers();
+    loadConfigUsuarios();
+  };
+
+  window.saveConsumo = async function() {
+    const ciudad = parseFloat(document.getElementById('config-ciudad').value);
+    const ruta = parseFloat(document.getElementById('config-ruta').value);
+    if (!ciudad || !ruta) { showToast('Ingresá ambos valores', 'error'); return; }
+    await setDoc(doc(db, 'config', 'app'), { consumoCiudad: ciudad, consumoRuta: ruta }, { merge: true });
+    appConfig = { consumoCiudad: ciudad, consumoRuta: ruta };
+    showToast('✓ Guardado', 'success');
+  };
+
+  // ── HELPERS ──
+  window.showScreen = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (id === 'screen-historico') loadHistorico();
+    if (id === 'screen-liquidacion') loadLiquidacion();
+    if (id === 'screen-config') { renderConfigRecurrentes(); loadConfigUsuarios(); }
+  };
+
+  window.setNav = function(btn) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+
+  window.selectPill = function(el, groupId) {
+    document.querySelectorAll('#' + groupId + ' .pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  };
+
+  window.openModal = function(id) {
+    document.getElementById(id).classList.add('open');
+  };
+
+  window.closeModal = function(id) {
+    document.getElementById(id).classList.remove('open');
+  };
+
+  window.closeModalOutside = function(e, id) {
+    if (e.target.classList.contains('modal-overlay')) closeModal(id);
+  };
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + type;
+    setTimeout(() => t.className = '', 2500);
+  }
+
+  window.showToast = showToast;
+
+  init();
+</script>
+</body>
+</html>
