@@ -2,7 +2,7 @@
   "name": "Nafta Golcito",
   "short_name": "Nafta",
   "description": "Gestión de gastos de nafta entre hermanos",
-  "start_url": "/nafta-golcito/index.html",
+  "start_url": "https://matias0ll.github.io/nafta-golcito/index.html",
   "display": "standalone",
   "background_color": "#0f1923",
   "theme_color": "#0f1923",
